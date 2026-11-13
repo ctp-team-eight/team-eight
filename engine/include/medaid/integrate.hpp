@@ -27,4 +27,13 @@ double trapezoid(std::span<const double> t, std::span<const double> y);
 ExposureSummary summarize_exposure(std::span<const double> t, std::span<const double> y,
                                    std::size_t min_points = kDefaultMinPoints);
 
+// Time-weighted average of y between start and end, such as one calendar year.
+// Estimates y at start and end with linear interpolation, keeps the real readings
+// between them, then uses the trapezoid rule.
+//
+// Throws InvalidSeriesError if start >= end or the range goes outside the readings,
+// and InsufficientDataError if fewer than 2 readings remain after cleaning.
+double average_between(std::span<const double> t, std::span<const double> y, double start,
+                       double end);
+
 }  // namespace medaid
