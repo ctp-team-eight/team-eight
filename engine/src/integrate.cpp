@@ -2,8 +2,10 @@
 
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include "medaid/errors.hpp"
+#include "medaid/interpolate.hpp"
 #include "medaid/series.hpp"
 
 namespace medaid {
@@ -47,6 +49,31 @@ ExposureSummary summarize_exposure(std::span<const double> t, std::span<const do
     const double cumulative = trapezoid(series.t, series.y);
     const double duration = series.t.back() - series.t.front();
     return ExposureSummary{series.t.size(), duration, cumulative, cumulative / duration};
+}
+
+double average_between(std::span<const double> t, std::span<const double> y, double start,
+                       double end) {
+    if (!(start < end)) {
+        throw InvalidSeriesError("start must be before end");
+    }
+
+    const Series series = clean_series(t, y);
+    if (series.t.size() < 2) {
+        throw InsufficientDataError("need at least 2 readings at different times");
+    }
+
+    std::vector<double> clipped_t{start};
+    std::vector<double> clipped_y{interpolate_linear(series.t, series.y, start)};
+    for (std::size_t i = 0; i < series.t.size(); ++i) {
+        if (series.t[i] > start && series.t[i] < end) {
+            clipped_t.push_back(series.t[i]);
+            clipped_y.push_back(series.y[i]);
+        }
+    }
+    clipped_t.push_back(end);
+    clipped_y.push_back(interpolate_linear(series.t, series.y, end));
+
+    return trapezoid(clipped_t, clipped_y) / (end - start);
 }
 
 }  // namespace medaid
