@@ -16,6 +16,17 @@ add_library(medaid_core STATIC src/series.cpp src/integrate.cpp src/interpolate.
 target_include_directories(medaid_core PUBLIC include)
 target_compile_options(medaid_core PRIVATE -Wall -Wextra -Wpedantic)
 
+# SKBUILD is set when pip builds the package through scikit-build-core.
+# A plain CMake build skips this, so the C++ tests do not need Python.
+if(SKBUILD)
+  find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development.Module)
+  find_package(nanobind CONFIG REQUIRED)
+
+  nanobind_add_module(_core NB_STATIC bindings/module.cpp)
+  target_link_libraries(_core PRIVATE medaid_core)
+  install(TARGETS _core LIBRARY DESTINATION medaid_engine)
+endif()
+
 if(MEDAID_BUILD_TESTS)
   include(FetchContent)
   FetchContent_Declare(

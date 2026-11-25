@@ -1,0 +1,19 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.9"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "medaid-engine"
+version = "0.1.0"
+description = "Numerical methods for irregularly sampled patient health data"
+requires-python = ">=3.10"
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0", "scipy>=1.14"]
+
+[tool.scikit-build]
+wheel.packages = ["python/medaid_engine"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
